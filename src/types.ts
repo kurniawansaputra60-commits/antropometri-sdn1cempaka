@@ -60,3 +60,30 @@ export interface IoTTelemetry {
   sensorDistanceRaw: number;
   loadCellRaw: number;
 }
+
+// RBAC (Role-Based Access Control) Types
+export type UserRole = 'TEACHER_UKS' | 'PARENT' | 'AUDITOR' | 'GUEST';
+
+export interface UserSession {
+  role: UserRole;
+  name: string;
+  identifier: string; // NIP untuk guru, NISN anak untuk ortu, NIP/ID untuk auditor
+  verifiedChildId?: string; // Jika role PARENT, hanya bisa lihat siswa ini
+  loginTime: string;
+}
+
+// Validasi Komputasi WHO AnthroPlus Benchmark Types
+export interface AnthroPlusValidationCase {
+  id: string;
+  sampleName: string;
+  gender: Gender;
+  ageMonths: number;
+  heightCm: number;
+  weightKg: number;
+  // Official Gold-Standard outputs from WHO AnthroPlus software
+  anthroPlusHFA: number;
+  anthroPlusBMI: number;
+  expectedStuntingStatus: StuntingStatus;
+  expectedNutritionStatus: NutritionStatus;
+  clinicalNote: string;
+}

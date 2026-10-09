@@ -104,18 +104,38 @@ export function interpolateLMS(table: WHOTableEntry[], ageMonths: number): { L: 
 }
 
 /**
- * Formula WHO Z-Score LMS:
- * Z = ((y / M)^L - 1) / (L * S)
+ * Formula WHO Z-Score LMS Standar Resmi WHO AnthroPlus:
+ * Z = ((y / M)^L - 1) / (L * S) jika |Z| <= 3
+ * Dilengkapi Restricted Standard Deviation WHO AnthroPlus jika Z > +3 atau Z < -3
  */
 export function calculateZScore(value: number, L: number, M: number, S: number): number {
   if (value <= 0 || M <= 0 || S <= 0) return 0;
-  let z: number;
+  
+  let zInd: number;
   if (Math.abs(L) < 0.001) {
-    z = Math.log(value / M) / S;
+    zInd = Math.log(value / M) / S;
   } else {
-    z = (Math.pow(value / M, L) - 1) / (L * S);
+    zInd = (Math.pow(value / M, L) - 1) / (L * S);
   }
-  return Number(z.toFixed(2));
+
+  // WHO AnthroPlus Restricted Tail adjustment beyond +-3 SD
+  if (zInd > 3.0) {
+    const sd3pos = Math.abs(L) < 0.001 ? M * Math.exp(3 * S) : M * Math.pow(1 + L * S * 3, 1 / L);
+    const sd2pos = Math.abs(L) < 0.001 ? M * Math.exp(2 * S) : M * Math.pow(1 + L * S * 2, 1 / L);
+    const deltaSD = sd3pos - sd2pos;
+    if (deltaSD > 0) {
+      zInd = 3.0 + (value - sd3pos) / deltaSD;
+    }
+  } else if (zInd < -3.0) {
+    const sd3neg = Math.abs(L) < 0.001 ? M * Math.exp(-3 * S) : M * Math.pow(1 + L * S * (-3), 1 / L);
+    const sd2neg = Math.abs(L) < 0.001 ? M * Math.exp(-2 * S) : M * Math.pow(1 + L * S * (-2), 1 / L);
+    const deltaSD = sd2neg - sd3neg;
+    if (deltaSD > 0) {
+      zInd = -3.0 + (value - sd3neg) / deltaSD;
+    }
+  }
+
+  return Number(zInd.toFixed(2));
 }
 
 /**

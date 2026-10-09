@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Student } from '../types';
+import { Student, UserSession } from '../types';
 import { GrowthChart } from './GrowthChart';
 import { PrintableReport } from './PrintableReport';
 import { 
@@ -14,20 +14,33 @@ import {
   TrendingUp, 
   Phone,
   ShieldCheck,
-  UserCheck
+  UserCheck,
+  Lock
 } from 'lucide-react';
 
 interface ParentPortalProps {
   students: Student[];
+  userSession?: UserSession;
 }
 
-export function ParentPortal({ students }: ParentPortalProps) {
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id || '');
+export function ParentPortal({ students, userSession }: ParentPortalProps) {
+  // If parent session has a verified child, lock to that child
+  const initialStudentId = userSession?.role === 'PARENT' && userSession.verifiedChildId
+    ? userSession.verifiedChildId
+    : students[0]?.id || '';
+
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(initialStudentId);
   const [nisnSearch, setNisnSearch] = useState<string>('');
   const [searchError, setSearchError] = useState<string>('');
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
 
-  const student = students.find(s => s.id === selectedStudentId) || students[0];
+  // If role is parent, ensure they can only view their own child
+  const effectiveStudentId = userSession?.role === 'PARENT' && userSession.verifiedChildId
+    ? userSession.verifiedChildId
+    : selectedStudentId;
+
+  const student = students.find(s => s.id === effectiveStudentId) || students[0];
+  const isParentLocked = userSession?.role === 'PARENT' && Boolean(userSession.verifiedChildId);
 
   const handleSearchNisn = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,45 +84,54 @@ export function ParentPortal({ students }: ParentPortalProps) {
             Data antropometri ditimbang dan diukur secara digital di ruang UKS SDN 1 Cempaka menggunakan perangkat IoT terkalibrasi. Anda dapat melihat perkembangan tinggi, berat, dan status gizi anak secara berkala setiap semester.
           </p>
 
-          {/* Quick NISN Finder & Switcher */}
-          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <form onSubmit={handleSearchNisn} className="flex-1 flex gap-2">
-              <input
-                type="text"
-                placeholder="Masukkan NISN anak (contoh: 0129482011)..."
-                value={nisnSearch}
-                onChange={(e) => setNisnSearch(e.target.value)}
-                className="w-full px-4 py-2 text-xs text-slate-800 bg-white rounded-xl focus:outline-hidden font-mono shadow-xs"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl transition-all shrink-0"
-              >
-                Cari Anak
-              </button>
-            </form>
-
-            {searchError && (
-              <span className="text-xs bg-rose-900/60 text-white px-3 py-1 rounded-lg font-medium">
-                {searchError}
-              </span>
-            )}
-
-            <div className="shrink-0 flex items-center gap-2">
-              <span className="text-xs text-emerald-200">Pilih cepat:</span>
-              <select
-                value={selectedStudentId}
-                onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="px-3 py-2 text-xs bg-white text-slate-800 font-semibold rounded-xl focus:outline-hidden"
-              >
-                {students.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} (Kelas {s.className})
-                  </option>
-                ))}
-              </select>
+          {/* Quick NISN Finder & Switcher (Hidden/Locked if logged in as specific Parent) */}
+          {isParentLocked ? (
+            <div className="pt-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-xl text-xs font-semibold text-white border border-white/30">
+                <Lock className="w-3.5 h-3.5 text-emerald-300" />
+                <span>Hak Akses Terverifikasi: Data Khusus Ananda <strong>{student.name}</strong> (NISN: {student.nisn})</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <form onSubmit={handleSearchNisn} className="flex-1 flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Masukkan NISN anak (contoh: 0129482011)..."
+                  value={nisnSearch}
+                  onChange={(e) => setNisnSearch(e.target.value)}
+                  className="w-full px-4 py-2 text-xs text-slate-800 bg-white rounded-xl focus:outline-hidden font-mono shadow-xs"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl transition-all shrink-0"
+                >
+                  Cari Anak
+                </button>
+              </form>
+
+              {searchError && (
+                <span className="text-xs bg-rose-900/60 text-white px-3 py-1 rounded-lg font-medium">
+                  {searchError}
+                </span>
+              )}
+
+              <div className="shrink-0 flex items-center gap-2">
+                <span className="text-xs text-emerald-200">Pilih cepat:</span>
+                <select
+                  value={selectedStudentId}
+                  onChange={(e) => setSelectedStudentId(e.target.value)}
+                  className="px-3 py-2 text-xs bg-white text-slate-800 font-semibold rounded-xl focus:outline-hidden"
+                >
+                  {students.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} (Kelas {s.className})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

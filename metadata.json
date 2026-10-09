@@ -2,5 +2,7 @@
   "name": "Sistem Antropometri Digital IoT SDN 1 Cempaka",
   "description": "Rancang Bangun Sistem Antropometri Digital Berbasis IoT untuk Monitoring Status Pertumbuhan Siswa SDN 1 Cempaka dengan sinkronisasi real-time, kalkulasi WHO Z-Score, grafik perkembangan, dan diagram metodologi perancangan sistem.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

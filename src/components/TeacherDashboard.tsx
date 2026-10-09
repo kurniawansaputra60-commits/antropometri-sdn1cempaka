@@ -21,7 +21,7 @@ import {
   Globe,
   Apple
 } from 'lucide-react';
-import { Student, MeasurementRecord } from '../types';
+import { Student, MeasurementRecord, UserSession } from '../types';
 import { GrowthChart } from './GrowthChart';
 import { PrintableReport } from './PrintableReport';
 import { PrintableCollectiveReport } from './PrintableCollectiveReport';
@@ -29,9 +29,12 @@ import { ExcelImportModal } from './ExcelImportModal';
 import { PojokGizi } from './PojokGizi';
 import { WhatsAppSenderModal } from './WhatsAppSenderModal';
 import { DeployGuideModal } from './DeployGuideModal';
+import { Lock, ShieldAlert } from 'lucide-react';
 
 interface TeacherDashboardProps {
   students: Student[];
+  userSession?: UserSession;
+  onRequestTeacherLogin?: () => void;
   onAddManualMeasurement: (studentId: string, weight: number, height: number, notes: string) => void;
   onSelectForIoTSim: (studentId: string) => void;
   onDeleteStudent: (studentId: string) => void;
@@ -40,11 +43,47 @@ interface TeacherDashboardProps {
 
 export function TeacherDashboard({ 
   students, 
+  userSession,
+  onRequestTeacherLogin,
   onAddManualMeasurement, 
   onSelectForIoTSim,
   onDeleteStudent,
   onImportStudents
 }: TeacherDashboardProps) {
+  // RBAC Access Control Check for Parent Role
+  if (userSession?.role === 'PARENT') {
+    return (
+      <div className="bg-white rounded-2xl p-8 border border-slate-200/90 text-center max-w-lg mx-auto space-y-4 my-12 shadow-sm">
+        <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
+          <Lock className="w-7 h-7" />
+        </div>
+        <div>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 uppercase tracking-wide">
+            RBAC Guard Active
+          </span>
+          <h3 className="text-lg font-bold text-slate-900 mt-2">
+            Akses Terbatas: Khusus Petugas UKS &amp; Guru
+          </h3>
+          <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+            Sesuai perancangan sistem Bab 3.3.6.3 (Role-Based Access Control), menu <strong>Dashboard UKS &amp; Direktori Siswa</strong> diproteksi untuk menjaga kerahasiaan data medis siswa.
+          </p>
+        </div>
+        <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-600 border border-slate-200">
+          Status aktif: <strong>{userSession.name} (Wali Murid)</strong>
+        </div>
+        <button
+          onClick={onRequestTeacherLogin}
+          className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all shadow-xs flex items-center justify-center gap-2"
+        >
+          <Lock className="w-4 h-4 text-emerald-400" />
+          <span>Buka Kunci Akses (Masukkan PIN Petugas UKS)</span>
+        </button>
+      </div>
+    );
+  }
+
+  const isAuditorReadOnly = userSession?.role === 'AUDITOR';
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClass, setSelectedClass] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
