@@ -48,6 +48,33 @@ function apiDevServerPlugin(): Plugin {
           return;
         }
 
+        // Handle GET /api/v1/iot/telemetry
+        if (req.url === '/api/v1/iot/telemetry' && req.method === 'GET') {
+          const logs = getLiveMeasurementLogs();
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            status: 'online',
+            device: 'ESP32-ANTRO-SDN1C-01',
+            serverTime: new Date().toISOString(),
+            totalPacketsReceived: logs.length,
+            lastIngestion: logs[0]?.timestamp || null,
+            supportedEndpoints: [
+              'POST /api/v1/anthropometry/sync',
+              'GET /api/v1/measurements/latest',
+              'GET /api/v1/iot/telemetry',
+              'POST /api/v1/validate-anthroplus'
+            ]
+          }));
+          return;
+        }
+
+        // Handle GET /health
+        if (req.url === '/health' && req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ status: 'ok', service: 'antropometri-iot' }));
+          return;
+        }
+
         // Handle GET /api/v1/validate-anthroplus
         if (req.url === '/api/v1/validate-anthroplus' && req.method === 'GET') {
           const audit = runAnthroPlusAudit();

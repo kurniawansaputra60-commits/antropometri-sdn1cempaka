@@ -1,4 +1,4 @@
-import { Gender, StuntingStatus, NutritionStatus } from '../types';
+import type { Gender, StuntingStatus, NutritionStatus } from '../types.ts';
 
 /**
  * WHO Child Growth Standards / WHO Reference 2007 (5 to 19 years)

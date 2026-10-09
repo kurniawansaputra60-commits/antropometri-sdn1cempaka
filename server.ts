@@ -9,7 +9,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// In AI Studio / Cloud Run, Nginx binds to process.env.PORT (8080) and reverse-proxies
+// all requests to localhost:3000 (DEFAULT_APP_PORT).
+// The Node backend must bind to port 3000 to avoid EADDRINUSE conflict on port 8080.
+const PORT = Number(
+  process.env.DEFAULT_APP_PORT ||
+  (process.env.PORT && process.env.PORT !== '8080' ? process.env.PORT : 3000)
+);
 
 app.use(express.json());
 

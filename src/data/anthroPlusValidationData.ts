@@ -1,5 +1,5 @@
-import { AnthroPlusValidationCase } from '../types';
-import { computeZScoreHFA, computeZScoreBMI } from './whoReference';
+import type { AnthroPlusValidationCase } from '../types.ts';
+import { computeZScoreHFA, computeZScoreBMI } from './whoReference.ts';
 
 /**
  * Dataset Validasi Komputasi Bab 3.3.6 (Pengujian Sistem)

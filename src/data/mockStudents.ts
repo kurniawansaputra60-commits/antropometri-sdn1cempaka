@@ -1,5 +1,5 @@
-import { Student } from '../types';
-import { computeZScoreHFA, computeZScoreBMI, classifyStunting, classifyNutrition, calculateAgeInMonths } from './whoReference';
+import type { Student } from '../types.ts';
+import { computeZScoreHFA, computeZScoreBMI, classifyStunting, classifyNutrition, calculateAgeInMonths } from './whoReference.ts';
 
 function createRecord(
   id: string,

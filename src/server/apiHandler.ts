@@ -1,12 +1,12 @@
-import { INITIAL_STUDENTS } from '../data/mockStudents';
-import { Student, MeasurementRecord } from '../types';
+import { INITIAL_STUDENTS } from '../data/mockStudents.ts';
+import type { Student, MeasurementRecord } from '../types.ts';
 import { 
   computeZScoreHFA, 
   computeZScoreBMI, 
   classifyStunting, 
   classifyNutrition, 
   calculateAgeInMonths 
-} from '../data/whoReference';
+} from '../data/whoReference.ts';
 
 // In-memory runtime database for live IoT ingestion
 let serverStudents: Student[] = [...INITIAL_STUDENTS];
